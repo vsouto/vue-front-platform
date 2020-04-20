@@ -1,0 +1,29 @@
+body {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+}
+
+iframe {
+  border: 0;
+}
+
+figcaption,
+figure,
+main {
+  display: block;
+}
+
+main {
+  overflow: hidden;
+}
+
+.material-design-icon {
+  width: auto !important;
+  height: auto !important;
+
+  .material-design-icon__svg {
+    height: auto !important;
+    width: 1.2rem !important;
+    position: initial !important
+  }
+}

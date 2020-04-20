@@ -1,0 +1,5 @@
+src/components/lib/**
+src/registerServiceWorker.js
+src/api/index.js
+src/router/index.js
+src/assets/sass/font-awesome/**

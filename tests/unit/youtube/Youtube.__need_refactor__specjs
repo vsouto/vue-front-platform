@@ -1,0 +1,118 @@
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import BootstrapVue from "bootstrap-vue"
+import Youtube from "@/youtube/views/home"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import {
+  BaseButton, Card
+} from "@/components/lib"
+import Vuex from "vuex"
+
+const localVue = createLocalVue()
+
+localVue.component("loading", LoadingAnimation)
+localVue.component(BaseButton.name, BaseButton)
+localVue.component(Card.name, Card)
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+
+const $router = {
+  replace: jest.fn(),
+  push: jest.fn()
+}
+
+const $route = {
+  path: "/youtube/",
+  query: {
+    error_title: "",
+    error_message: ""
+  }
+}
+
+const YoutubeActions = {
+  authorizeAccount: jest.fn(),
+  deleteProfile: jest.fn(() => Promise.resolve({
+    data: {}
+  })),
+  fetchAccounts: jest.fn(() => Promise.resolve({
+    data: {}
+  })),
+  fetchProfiles: jest.fn(() => Promise.resolve({
+    data: {}
+  }))
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+  },
+  getters: {
+    isLoading: state => state.isLoading,
+  },
+  modules: {
+    youtube: {
+      namespaced: true,
+      actions: YoutubeActions,
+      getters: {
+        accounts: () => Array(5).fill({
+          name: "account"
+        }),
+        accounts_fetched: () => true,
+        profiles: () => Array(5).fill({
+          name: "profile"
+        }),
+        profiles_fetched: () => true
+      },
+    }
+  }
+})
+const wrapper = shallowMount(Youtube, {
+  localVue,
+  store,
+  mocks: {
+    $router,
+    $route,
+    $notify: jest.fn(),
+    $refs: {
+      youtubeRemove: {
+        show: jest.fn(),
+        hide: jest.fn()
+      }
+    },
+    $t: jest.fn()
+  }
+})
+
+localVue.use(BootstrapVue)
+
+describe("Youtube.vue", () => {
+  it("is Youtube", () => {
+    expect(wrapper.is(Youtube)).toBe(true)
+  })
+
+  it("should prefetch data", () => {
+    expect(YoutubeActions.fetchAccounts).toHaveBeenCalled()
+    expect(YoutubeActions.fetchProfiles).toHaveBeenCalled()
+  })
+
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.isLoading).toBe(false)
+    expect(wrapper.vm.accounts.length).toBe(5)
+    expect(wrapper.vm.fetched).toBe(true)
+    expect(wrapper.vm.accounts.length).toBe(5)
+    expect(wrapper.vm.fetched).toBe(true)
+  })
+
+  it("should render correct template", () => {
+    expect(wrapper.find("#Youtube").exists()).toBe(true)
+  })
+
+  it("should call correct actions", async () => {
+    wrapper.vm.authorizeNewAccount({})
+    expect(YoutubeActions.authorizeAccount).toHaveBeenCalled()
+    await wrapper.vm.remove()
+    expect(YoutubeActions.deleteProfile).toHaveBeenCalled()
+  })
+})

@@ -1,0 +1,12 @@
+/* eslint-disable */
+<template>
+  <div>
+    <router-view />
+  </div>
+</template>
+
+<script>
+export default {
+  name: "DefaultRouterView"
+}
+</script>

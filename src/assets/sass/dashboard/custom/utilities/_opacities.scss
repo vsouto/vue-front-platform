@@ -1,0 +1,3 @@
+@each $opacity, $value in $opacities {
+	@include opacity-variant(".opacity-#{$opacity}", $value);
+}

@@ -1,0 +1,106 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import ShopifyLoadOrders from "@/shopify/views/loadOrders"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import {
+  BaseButton, BaseInput, Card
+} from "@/components/lib"
+
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component(BaseInput.name, BaseInput)
+localVue.component(BaseButton.name, BaseButton)
+localVue.component(Card.name, Card)
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+
+const $router = {
+  push: jest.fn()
+}
+
+const $route = {
+  params: {
+    id: 1
+  }
+}
+
+const actions = {
+  fetchOrders: jest.fn(),
+  fetchProducts: jest.fn(),
+}
+
+const mutations = {
+  setAccountId: jest.fn()
+}
+
+let state = {
+  orders: [],
+  orders_fetched: false,
+  products: [],
+  products_fetched: false,
+  account_id: ""
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+  },
+  getters: {
+    isLoading: state => state.isLoading
+  },
+  modules: {
+    shopify: {
+      namespaced: true,
+      state: state,
+      getters: {
+        orders: state => state.orders,
+        orders_fetched: state => state.orders_fetched,
+        products: state => state.products,
+        products_fetched: state => state.products_fetched,
+        accountId: state => state.account_id
+      },
+      actions,
+      mutations
+    }
+  }
+})
+
+const wrapper = shallowMount(ShopifyLoadOrders, {
+  localVue,
+  store,
+  mocks: {
+    $router,
+    $route,
+    $notify: jest.fn(),
+    $t: jest.fn()
+  }
+})
+
+describe("ShopifyLoadOrders.vue", () => {
+  it("is ShopifyLoadOrders", () => {
+    expect(wrapper.is(ShopifyLoadOrders)).toBe(true)
+  })
+  it("should prefetch data", () => {
+    expect(actions.fetchOrders).toHaveBeenCalled()
+    expect(actions.fetchProducts).toHaveBeenCalled()
+    expect(mutations.setAccountId).toHaveBeenCalled()
+  })
+
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.isLoading).toBe(false)
+    expect(wrapper.vm.orders).toEqual([])
+    expect(wrapper.vm.products).toEqual([])
+    expect(wrapper.vm.orders_fetched).toBe(false)
+    expect(wrapper.vm.products_fetched).toBe(false)
+  })
+
+  it("loadOrderProducts", () => {
+    wrapper.vm.loadOrderProducts()
+    expect($router.push).toHaveBeenCalled()
+  })
+})

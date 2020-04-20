@@ -1,0 +1,16 @@
+.sweet-modal {
+  .sweet-title {
+    margin: 0 !important;
+    padding: 0 1rem !important;
+  }
+
+  .actions {
+    display: flex;
+    flex-flow: row wrap;
+
+    .btn {
+      flex: 0 1 20rem;
+      margin: 0.5rem;
+    }
+  }
+}

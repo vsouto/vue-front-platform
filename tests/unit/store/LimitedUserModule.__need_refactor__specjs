@@ -1,0 +1,171 @@
+import * as mutations from "@/store/modules/limited-user/mutations"
+import * as actions from "@/store/modules/limited-user/actions"
+
+jest.mock("axios")
+jest.mock("auth0-js")
+
+import api from "@/api"
+
+import {
+  limitedUsers
+} from "../../data/limited-user"
+
+describe("mutations", () => {
+  let state = null
+  beforeEach(() => {
+    state = {
+      fetched: false,
+      limited_users: limitedUsers(),
+      limited_user: null
+    }
+  })
+
+  it("ADD_LIMITED_USER", () => {
+    let limited_user = {
+      user_id: 3,
+      name: "developer"
+    }
+
+    mutations.ADD_LIMITED_USER(state, limited_user)
+    expect(state.limited_users).toEqual([...limitedUsers(), limited_user])
+  })
+
+  it("SET_LIMITED_USERS", () => {
+    state.limited_users = []
+
+    mutations.SET_LIMITED_USERS(state, limitedUsers())
+    expect(state.limited_users).toEqual(limitedUsers())
+  })
+
+  it("NEW_LIMITED_USERS", () => {
+    let new_limited_user = {
+      user_id: 2,
+      name: "developer"
+    }
+
+    mutations.NEW_LIMITED_USERS(state, new_limited_user)
+    expect(state.limited_users).toEqual([limitedUsers()[0], new_limited_user])
+  })
+
+  it("DEL_LIMITED_USERS", () => {
+    let id = 1
+
+    mutations.DEL_LIMITED_USERS(state, id)
+    expect(state.limited_users).toEqual([limitedUsers()[1]])
+  })
+
+})
+
+describe("actions", () => {
+  let rootState = {
+    fetch_control: {},
+    errored_control: {}
+  }
+
+  let state = {
+    limited_users: limitedUsers(),
+    limited_user: null
+  }
+
+  it("fetchLimitedUsers when fetched is false", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    state.fetched = false
+    api.get.mockReturnValueOnce(Promise.resolve({
+      data: {
+        users: limitedUsers()
+      }
+    }))
+
+    await actions.fetchLimitedUsers({
+      commit,
+      rootState,
+      dispatch
+    })
+
+    expect(commit).toHaveBeenCalledWith("SET_FETCHED", "limitedUsers", expect.any(Object))
+    expect(commit).toHaveBeenCalledWith("SET_LIMITED_USERS", limitedUsers())
+    expect(dispatch).not.toHaveBeenCalled()
+    expect(api.get).toHaveBeenCalledWith("/limited-user")
+
+  })
+
+  it("fetchLimitedUsers when fetched is true", async () => {
+    const commit = jest.fn()
+    rootState.fetch_control["limitedUsers"] = "fetched"
+
+    await actions.fetchLimitedUsers({
+      rootState,
+      commit
+    })
+    expect(commit).not.toHaveBeenCalled()
+  })
+
+  it("createLimitedUser", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+
+    let limited_user = {
+      user_id: 3,
+      name: "developer"
+    }
+    api.post.mockReturnValueOnce(Promise.resolve({
+      data: {
+        response: limited_user
+      }
+    }))
+
+    await actions.createLimitedUser({
+      commit,
+      dispatch
+    }, limited_user)
+    expect(commit).toHaveBeenCalledWith("ADD_LIMITED_USER", limited_user)
+    expect(api.post).toHaveBeenCalledWith(
+      "/limited-user",
+      limited_user
+    )
+  })
+
+  it("updateLimitedUser", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let limited_user = {
+      user_id: 2,
+      name: "developer"
+    }
+    api.patch.mockReturnValueOnce(Promise.resolve({
+      data: {
+        response: limited_user
+      }
+    }))
+
+    await actions.updateLimitedUser({
+      dispatch,
+      commit
+    }, limited_user)
+
+    expect(api.patch).toHaveBeenCalledWith("/limited-user", limited_user)
+    expect(commit).toHaveBeenCalledWith("NEW_LIMITED_USERS", limited_user)
+  })
+
+  it("deleteLimitedUser", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let id = 1
+
+    await actions.deleteLimitedUser({
+      commit,
+      dispatch
+    },
+    id
+    )
+
+    expect(commit).toHaveBeenCalledWith("DEL_LIMITED_USERS", id)
+    expect(api.delete).toHaveBeenCalledWith("/limited-user", {
+      params: {
+        limited_auth_id: 1
+      }
+    })
+  })
+
+})

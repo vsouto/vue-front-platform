@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "allowSyntheticDefaultImports": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@lib/*": ["src/components/lib/*"]
+    }
+  },
+  "exclude": ["dist", "dist-prod"],
+  "include": ["./src/**/*", "./tests/**/*"]
+}

@@ -1,0 +1,169 @@
+import * as mutations from "@/store/modules/youtube/mutations"
+import * as getters from "@/store/modules/youtube/getters"
+import * as actions from "@/store/modules/youtube/actions"
+
+jest.mock("axios")
+jest.mock("auth0-js")
+
+import api from "@/api"
+
+import {
+  accounts
+} from "../../data/google-analytics"
+
+
+describe("mutations", () => {
+  let state = {
+    accounts: accounts(),
+    accounts_fetched: false,
+  }
+
+  it("addAccount", () => {
+    let account = {
+      id: 3,
+      name: "devs"
+    }
+    mutations.addAccount(state, account)
+    expect(state.accounts[state.accounts.length - 1]).toEqual(account)
+  })
+
+  it("SET_ACCOUNTS", () => {
+    let updatedAccounts = accounts()
+    updatedAccounts[0].name = "devs"
+    mutations.SET_ACCOUNTS(state, updatedAccounts)
+    expect(state.accounts).toEqual(updatedAccounts)
+  })
+
+  it("updateAccount", () => {
+    let account = {
+      id: 1,
+      name: "devs"
+    }
+    mutations.updateAccount(state, account)
+    expect(state.accounts[0]).toEqual(account)
+  })
+
+  it("deleteAccount", () => {
+    let account = {
+      id: 1,
+      name: "devs"
+    }
+    let id = 2
+    mutations.deleteAccount(state, id)
+    expect(state.accounts[0]).toEqual(account)
+  })
+})
+
+describe("actions", () => {
+  let state = {
+    accounts: accounts(),
+    accounts_fetched: false,
+  }
+
+  it("fetchAccounts when accounts_fetched is false", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    state.accounts_fetched = false
+    api.get.mockReturnValueOnce(Promise.resolve({
+      data: {
+        response: accounts()
+      }
+    }))
+
+    await actions.fetchAccounts({
+      commit,
+      state,
+      dispatch
+    })
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", true, expect.any(Object))
+    expect(commit).toHaveBeenCalledWith("SET_ACCOUNTS", accounts())
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", false, expect.any(Object))
+    expect(api.get).toHaveBeenCalledWith("/youtube/account")
+  })
+
+  it("fetchAccounts when accounts_fetched is true", async () => {
+    const commit = jest.fn()
+    state.accounts_fetched = true
+
+    await actions.fetchAccounts({
+      state,
+      commit
+    })
+    expect(commit).not.toHaveBeenCalled()
+  })
+
+  it("addAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+
+    await actions.addAccount({
+      commit,
+      dispatch
+    },
+    accounts()[0]
+    )
+    expect(commit).toHaveBeenCalledWith("addAccount", accounts()[0])
+    expect(api.post).toHaveBeenCalledWith(
+      "/youtube/account",
+      accounts()[0]
+    )
+  })
+
+  it("updateAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let account = {
+      id: 1,
+      name: "dev"
+    }
+    await actions.updateAccount({
+      commit,
+      dispatch
+    },
+    account
+    )
+    expect(commit).toHaveBeenCalledWith("updateAccount", account)
+    expect(api.patch).toHaveBeenCalledWith("/youtube/account/1", account)
+  })
+
+  it("deleteAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let id = 1
+
+    await actions.deleteAccount({
+      commit,
+      dispatch
+    },
+    id
+    )
+    expect(commit).toHaveBeenCalledWith("deleteAccount", id)
+    expect(api.delete).toHaveBeenCalledWith("/youtube/account/1")
+  })
+})
+
+describe("getters", () => {
+  let state = {
+    accounts: accounts(),
+    accounts_fetched: true,
+  }
+
+  it("getAccountById when accounts_fetched is true", () => {
+    let id = 1
+    expect(getters.getAccountById(state)(id)).toEqual(state.accounts[0])
+  })
+
+  it("getAccountById when accounts_fetched is false", () => {
+    let id = 1
+    state.accounts_fetched = false
+    expect(getters.getAccountById(state)(id)).toEqual(null)
+  })
+
+  it("accounts_fetched", () => {
+    expect(getters.accounts_fetched(state)).toEqual(state.accounts_fetched)
+  })
+
+  it("accounts", () => {
+    expect(getters.accounts(state)).toEqual(state.accounts)
+  })
+})

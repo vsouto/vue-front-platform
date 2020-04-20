@@ -1,0 +1,87 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import HotmartAffiliations from "@/platforms/HotmartAffiliations"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import {
+  BaseButton, BaseInput, Card
+} from "@/components/lib"
+import {
+  affiliations
+} from "../../data/hotmart"
+
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component(BaseInput.name, BaseInput)
+localVue.component(BaseButton.name, BaseButton)
+localVue.component(Card.name, Card)
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+
+const $router = {
+  push: jest.fn()
+}
+
+const $route = {
+  params: {
+    id: 5
+  }
+}
+
+const actions = {
+  fetchAffiliations: jest.fn(),
+}
+
+let state = {
+  affiliations: affiliations(),
+  affiliations_fetched_id: 1
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+  },
+  getters: {
+    isLoading: state => state.isLoading
+  },
+  modules: {
+    hotmart: {
+      namespaced: true,
+      state: state,
+      getters: {
+        affiliations: state => state.affiliations,
+        affiliations_fetched_id: state => state.affiliations_fetched_id,
+      },
+      actions,
+    }
+  }
+})
+
+const wrapper = shallowMount(HotmartAffiliations, {
+  localVue,
+  store,
+  mocks: {
+    $router,
+    $route,
+    $notify: jest.fn(),
+    $t: jest.fn()
+  }
+})
+
+describe("HotmartAffiliations.vue", () => {
+  it("is HotmartAffiliations", () => {
+    expect(wrapper.is(HotmartAffiliations)).toBe(true)
+  })
+  it("should prefetch data", () => {
+    expect(actions.fetchAffiliations).toHaveBeenCalled()
+  })
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.isLoading).toBe(false)
+    expect(wrapper.vm.affiliations.length).toEqual(2)
+    expect(wrapper.vm.fetched).toBe(true)
+  })
+})

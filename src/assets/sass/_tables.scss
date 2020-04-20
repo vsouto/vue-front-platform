@@ -1,0 +1,152 @@
+// el-tables
+.el-table {
+  /deep/ thead {
+    /deep/ .cell {
+      color: $gray-600
+    }
+  }
+
+  /deep/ .el-table__fixed {
+    &:before {
+      width: initial;
+      height: initial;
+      background-color: initial;
+      z-index: initial;
+    }
+  }
+
+  /deep/ .cell {
+    color: $gray-200
+  }
+
+  /deep/ .el-table__expand-icon {
+    font-size: 1.2rem;
+    height: 2rem;
+    color: $info;
+    left: .2rem;
+    top: 0;
+
+    &.el-table__expand-icon--expanded {
+      left: .5rem;
+    }
+  }
+
+  /deep/ .el-table__row {
+    td {
+      border: none !important;
+      padding: .1rem 0;
+    }
+
+    &.expanded {
+      &+tr {
+        td.el-table__expanded-cell {
+          padding: 1rem 0 1rem 3rem;
+          border: none;
+        }
+      }
+    }
+
+    &.hover-row {
+      td {
+        background: transparent !important;
+      }
+    }
+  }
+
+  &.el-table--striped {
+    .el-table__body {
+      tr.el-table__row--striped {
+        td {
+          background: #1b1b27
+        }
+
+        &.expanded+tr {
+          background: #1b1b27;
+
+          td {
+            border: none
+          }
+        }
+      }
+    }
+  }
+
+  &.el-table--enable-row-hover {
+    table.el-table__body {
+      tr:hover {
+        >td {
+          background: #222a42;
+        }
+      }
+    }
+  }
+
+  /deep/ .action-column {
+    /deep/ .action-simple-button {
+      font-size: 0.8em;
+      padding: 0.2rem 0.3rem;
+      margin: 0 0.25rem;
+      flex: 0 1 auto;
+      display: block;
+      white-space: nowrap;
+    }
+
+    /deep/ .action-icon {
+      color: $info
+    }
+
+    /deep/ .on-hover {
+      display: none;
+    }
+
+    &:hover {
+      /deep/ .action-icon {
+        display: none;
+      }
+
+      /deep/ .on-hover {
+        display: flex;
+        flex-flow: row wrap;
+      }
+    }
+  }
+}
+
+// data-table pagination
+.pagination-bar {
+  margin: 1rem;
+
+  .pagination-wrap {
+    .el-pagination {
+      button {
+        color: $info;
+        background: transparent;
+
+        &:disabled {
+          color: $black
+        }
+      }
+
+      .el-pager {
+        li {
+          color: $gray-100;
+          background: transparent
+        }
+
+        &.active {
+          color: $white
+        }
+      }
+
+      .el-pagination__jump,
+      .el-pagination__sizes {
+        .el-input {
+          input {
+            background: transparent;
+            border: 1px solid $black
+          }
+        }
+      }
+    }
+  }
+}

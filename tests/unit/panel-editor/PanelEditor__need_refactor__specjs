@@ -1,0 +1,92 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+
+import { shallowMount, createLocalVue } from "@vue/test-utils"
+import PanelEditor from "@/components/panel-editor/PanelEditorV2"
+import { Card } from "@/components/lib"
+
+const localVue = createLocalVue()
+
+localVue.component(Card.name, Card)
+localVue.use(BootstrapVue)
+localVue.use(Vuex)
+
+const $router = {
+  push: jest.fn()
+}
+
+const panelActions = {
+  createPanel: jest.fn(() => Promise.resolve()),
+  updatePanel: jest.fn(() => Promise.resolve())
+}
+
+const store = new Vuex.Store({
+  getters: {
+    isLoading: () => false
+  },
+  state: {
+    widgets: [],
+    isLoading: false
+  },
+  modules: {
+    panel: {
+      state: {
+        panel_edit: {
+          panel_id: "panel",
+          name: "panel"
+        },
+        panels: []
+      },
+      namespaced: true,
+      actions: panelActions
+    }
+  }
+})
+
+const wrapper = shallowMount(PanelEditor, {
+  localVue,
+  store,
+  mocks: {
+    $t: jest.fn(),
+    $notify: jest.fn(),
+    $router,
+    $route: {
+      query: {
+        configureFirstPanel: 1
+      },
+      params: {
+        id: 1
+      }
+    }
+  }
+})
+
+describe("PanelEditor - PanelEditor.vue", () => {
+  it("is PanelEditor", () => {
+    expect(wrapper.is(PanelEditor)).toBe(true)
+  })
+  describe("PanelEditor methods", () => {
+    it("add", async () => {
+      await wrapper.vm.add()
+      expect(panelActions.createPanel).toHaveBeenCalled()
+      expect($router.push).toHaveBeenCalled()
+    })
+    it("update", async () => {
+      await wrapper.vm.update()
+      expect(panelActions.updatePanel).toHaveBeenCalled()
+      expect($router.push).toHaveBeenCalled()
+    })
+  })
+
+  describe("PanelEditor computed properties", () => {
+    it("selectedWidgets", () => {
+      expect(wrapper.vm.selectedWidgets).toEqual([])
+    })
+    it("isLoading", () => {
+      expect(wrapper.vm.isLoading).toBe(false)
+    })
+    it("isEditingPanel", () => {
+      expect(wrapper.vm.isEditingPanel).toBe(true)
+    })
+  })
+})

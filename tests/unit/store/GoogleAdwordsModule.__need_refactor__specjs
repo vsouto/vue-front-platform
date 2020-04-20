@@ -1,0 +1,175 @@
+import * as mutations from "@/store/modules/google-ads/mutations"
+import * as getters from "@/store/modules/google-ads/getters"
+import * as actions from "@/store/modules/google-ads/actions"
+
+jest.mock("axios")
+jest.mock("auth0-js")
+
+import api from "@/api"
+
+import {
+  accounts
+} from "../../data/google-adsense"
+
+
+describe("mutations", () => {
+  let state = {
+    accounts: accounts(),
+    account: {},
+    accounts_fetched: false
+  }
+
+  it("addAccount", () => {
+    let account = {
+      id: 3,
+      account_id: 3,
+      nickname: "developer"
+    }
+    mutations.addAccount(state, account)
+
+    expect(state.accounts[state.accounts.length - 1]).toEqual(account)
+  })
+
+  it("SET_ACCOUNTS", () => {
+    let updatedAccounts = accounts()
+    updatedAccounts[0].nickname = "devs"
+
+    mutations.SET_ACCOUNTS(state, updatedAccounts)
+
+    expect(state.accounts).toEqual(updatedAccounts)
+  })
+
+  it("setAccount", () => {
+    let account = {
+      id: 1,
+      account_id: 1,
+      nickname: "devs"
+    }
+    mutations.setAccount(state, account)
+
+    expect(state.account).toEqual(account)
+  })
+
+  it("newAccounts", () => {
+    mutations.newAccounts(state, {
+      id: 1,
+      account_id: 1,
+      nickname: "developer"
+    })
+
+    expect(state.accounts).toEqual(accounts())
+  })
+
+  it("deleteAccount", () => {
+    let id = 2
+    mutations.deleteAccount(state, id)
+
+    expect(state.accounts).toEqual([accounts()[0]])
+  })
+})
+
+describe("actions", () => {
+  let state = {
+    accounts: accounts(),
+    account: {},
+    accounts_fetched: false
+  }
+
+  it("fetchAccounts when accounts_fetched is false", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    state.accounts_fetched = false
+    api.get.mockReturnValueOnce(Promise.resolve({
+      data: {
+        response: accounts()
+      }
+    }))
+
+    await actions.fetchAccounts({
+      commit,
+      state,
+      dispatch
+    })
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", true, expect.any(Object))
+    expect(commit).toHaveBeenCalledWith("SET_ACCOUNTS", accounts())
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", false, expect.any(Object))
+    expect(api.get).toHaveBeenCalledWith("/google-ads/account")
+  })
+
+  it("fetchAccounts when accounts_fetched is true", async () => {
+    const commit = jest.fn()
+    state.accounts_fetched = true
+
+    await actions.fetchAccounts({
+      state,
+      commit
+    })
+    expect(commit).not.toHaveBeenCalled()
+  })
+
+  // it("authorizeAccount", async () => {
+  //   window.open = jest.fn();
+  //   let payload = {
+  //     token: "token",
+  //     scope: "scope"
+  //   };
+  //   await actions.authorizeAccount(state, payload);
+  //   expect(window.open).toHaveBeenCalled();
+  // });
+
+  it("addAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+
+    await actions.addAccount({
+      commit,
+      dispatch
+    },
+    accounts()[0]
+    )
+    expect(commit).toHaveBeenCalledWith("addAccount", accounts()[0])
+    expect(api.post).toHaveBeenCalledWith(
+      "/google-ads/account",
+      accounts()[0]
+    )
+  })
+
+  it("deleteAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let id = 1
+
+    await actions.deleteAccount({
+      commit,
+      dispatch
+    },
+    id
+    )
+
+    expect(commit).toHaveBeenCalledWith("deleteAccount", id)
+    expect(api.delete).toHaveBeenCalledWith("/google-ads/account/1")
+  })
+})
+
+describe("getters", () => {
+  let state = null
+  beforeEach(() => {
+    state = {
+      accounts: accounts(),
+      accounts_fetched: true
+    }
+  })
+
+  it("getAccountById", () => {
+    let id = 1
+    expect(getters.getAccountById(state)(id)).toEqual(state.accounts[0])
+  })
+
+  it("accounts_fetched", () => {
+    expect(getters.accounts_fetched(state)).toEqual(state.accounts_fetched)
+  })
+
+  it("accounts", () => {
+    expect(getters.accounts(state)).toEqual(state.accounts)
+  })
+})

@@ -1,0 +1,59 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import ShopifyLoadProducts from "@/shopify/views/loadProducts"
+
+const localVue = createLocalVue()
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+
+const $route = {
+  params: {
+    id:1,
+    order_id: 1
+  }
+}
+
+let state = {
+  orders: [],
+  orders_fetched: true,
+  products: [],
+  products_fetched: true,
+}
+
+const store = new Vuex.Store({
+  modules: {
+    shopify: {
+      namespaced: true,
+      state: state,
+      getters: {
+        products_fetched: state => state.products_fetched,
+        getProductsByShopId: () => () => []
+      },
+    }
+  }
+})
+
+const wrapper = shallowMount(ShopifyLoadProducts, {
+  localVue,
+  store,
+  mocks: {
+    $route,
+    $t: jest.fn()
+  }
+})
+
+describe("ShopifyLoadProducts.vue", () => {
+  it("is ShopifyLoadProducts", () => {
+    expect(wrapper.is(ShopifyLoadProducts)).toBe(true)
+  })
+
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.products).toEqual([])
+    expect(wrapper.vm.products_fetched).toBe(true)
+  })
+})

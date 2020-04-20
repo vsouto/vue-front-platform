@@ -1,0 +1,559 @@
+import * as mutations from "@/store/modules/google-analytics/mutations"
+import * as getters from "@/store/modules/google-analytics/getters"
+import * as actions from "@/store/modules/google-analytics/actions"
+
+jest.mock("axios")
+jest.mock("auth0-js")
+
+import api from "@/api"
+
+import {
+  accounts,
+  profiles,
+  webProperties,
+  views
+} from "../../data/google-analytics"
+
+describe("mutations", () => {
+  let state = {
+    profiles: [],
+    profiles_fetched: false,
+    profile: null,
+    accounts: [],
+    accounts_fetched: false,
+    account: null,
+    web_properties: [],
+    web_properties_fetched: false,
+    web_property: null,
+    views: [],
+    views_fetched: false,
+    active_views: [],
+    active_views_fetched: false,
+    selected_views: [],
+    report: {},
+    report_fetched: false,
+    accountId: "",
+    profileId: "",
+    propertyId: "",
+    viewId: ""
+  }
+
+  it("setProfiles", () => {
+    mutations.setProfiles(state, profiles())
+    expect(state.profiles).toEqual(profiles())
+  })
+  it("setProfile", () => {
+    mutations.setProfile(state, profiles()[0])
+    expect(state.profile).toEqual(profiles()[0])
+  })
+  it("SET_ACCOUNTS", () => {
+    mutations.SET_ACCOUNTS(state, accounts())
+    expect(state.accounts).toEqual(accounts())
+  })
+  it("setAccount", () => {
+    mutations.setAccount(state, accounts()[0])
+    expect(state.account).toEqual(accounts()[0])
+  })
+  it("setWebProperties", () => {
+    mutations.setWebProperties(state, webProperties())
+    expect(state.web_properties).toEqual(webProperties())
+  })
+  it("setWebProperty", () => {
+    mutations.setWebProperty(state, webProperties()[0])
+    expect(state.web_property).toEqual(webProperties()[0])
+  })
+  it("setViews", () => {
+    mutations.setViews(state, views())
+    expect(state.views).toEqual(views())
+  })
+  it("setReport", () => {
+    mutations.setReport(state, {
+      id: 1,
+      data: []
+    })
+    expect(state.report).toEqual({
+      id: 1,
+      data: []
+    })
+  })
+  it("setActiveViews", () => {
+    mutations.setActiveViews(state, views())
+    expect(state.active_views).toEqual(views())
+  })
+  it("addActiveViews", () => {
+    const newView = {
+      id: 3,
+      web_property_id: 3,
+      name: "developer-view"
+    }
+    mutations.addActiveViews(state, [newView])
+    expect(state.active_views).toEqual([...views(), newView])
+  })
+  it("deleteActiveView", () => {
+    mutations.deleteActiveView(state, 3)
+    expect(state.active_views).toEqual(views())
+  })
+  it("updateActiveView", () => {
+    const updatedView = {
+      id: 2,
+      web_property_id: 2,
+      name: "test-view"
+    }
+    mutations.updateActiveView(state, updatedView)
+    expect(state.active_views).toEqual([{
+      id: 1,
+      name: "view",
+      web_proprety_id: 1
+    },
+    {
+      id: 2,
+      name: "test-view",
+      web_property_id: 2
+    }
+    ])
+  })
+  it("addSelectedView", () => {
+    mutations.addSelectedView(state, views()[0])
+    expect(state.selected_views).toEqual([views()[0]])
+  })
+  it("deleteSelectedView", () => {
+    mutations.deleteSelectedView(state, views()[0])
+    expect(state.selected_views).toEqual([])
+  })
+  it("clearSelectedViews", () => {
+    mutations.clearSelectedViews(state)
+    expect(state.selected_views).toEqual([])
+  })
+  it("setProfileId", () => {
+    mutations.setProfileId(state, 1)
+    expect(state.profileId).toEqual(1)
+  })
+  it("setAccountId", () => {
+    mutations.setAccountId(state, 1)
+    expect(state.accountId).toEqual(1)
+  })
+  it("setPropertyId", () => {
+    mutations.setPropertyId(state, 1)
+    expect(state.propertyId).toEqual(1)
+  })
+  it("setViewId", () => {
+    mutations.setViewId(state, 1)
+    expect(state.viewId).toEqual(1)
+  })
+})
+
+describe("actions", () => {
+  let state = {
+    profiles: [],
+    profiles_fetched: false,
+    profile: null,
+    accounts: [],
+    accounts_fetched: false,
+    account: null,
+    web_properties: [],
+    web_properties_fetched: false,
+    web_property: null,
+    views: [],
+    views_fetched: false,
+    active_views: [],
+    active_views_fetched: false,
+    selected_views: [],
+    report: {},
+    report_fetched: false,
+    accountId: "",
+    profileId: "",
+    propertyId: "",
+    viewId: ""
+  }
+
+  let rootState = {
+    fetch_control: {}
+  }
+  const token = "token"
+  const refresh_token = "refresh-token"
+
+  it("fetchAccounts", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    const fetchAttr = "googleAnalytics/accounts"
+    api.get.mockReturnValueOnce(
+      Promise.resolve({
+        data: {
+          response: accounts()
+        }
+      })
+    )
+
+    await actions.fetchAccounts({
+      commit,
+      rootState,
+      dispatch
+    }, {
+      token,
+      refresh_token
+    })
+
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHING",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(commit).toHaveBeenCalledWith("SET_ACCOUNTS", accounts())
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHED",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(api.get).toHaveBeenCalledWith(
+      "/google-analytics/load_accounts?token=token&refresh_token=refresh-token"
+    )
+  })
+
+  it("fetchProfiles", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    const fetchAttr = "googleAnalytics/profiles"
+    api.get.mockReturnValueOnce(
+      Promise.resolve({
+        data: {
+          response: []
+        }
+      })
+    )
+
+    await actions.fetchProfiles({
+      commit,
+      rootState,
+      dispatch
+    }, {
+      token,
+      refresh_token
+    })
+
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHING",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(commit).toHaveBeenCalledWith("setProfiles", [])
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHED",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(api.get).toHaveBeenCalledWith(
+      "/google-analytics/load_credentials"
+    )
+  })
+
+  it("fetchWebProperties", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    const fetchAttr = "googleAnalytics/web_properties"
+    let id = 1
+    api.get.mockReturnValueOnce(
+      Promise.resolve({
+        data: {
+          response: []
+        }
+      })
+    )
+
+    await actions.fetchWebProperties({
+      commit,
+      rootState,
+      dispatch
+    }, {
+      id,
+      token,
+      refresh_token
+    })
+
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHING",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(commit).toHaveBeenCalledWith("setWebProperties", [])
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHED",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(api.get).toHaveBeenCalledWith(
+      "/google-analytics/load_webproperties/1?token=token&refresh_token=refresh-token"
+    )
+  })
+
+  it("fetchViews", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    const fetchAttr = "googleAnalytics/views"
+    let id = 1
+    let property_id = 1
+    api.get.mockReturnValueOnce(
+      Promise.resolve({
+        data: {
+          response: views()
+        }
+      })
+    )
+
+    await actions.fetchViews({
+      commit,
+      rootState,
+      dispatch
+    }, {
+      id,
+      property_id,
+      token,
+      refresh_token
+    })
+
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHING",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(commit).toHaveBeenCalledWith("setViews", views())
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHED",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(api.get).toHaveBeenCalledWith(
+      "/google-analytics/load_views/1/1?token=token&refresh_token=refresh-token"
+    )
+  })
+
+  it("fetchReport", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    const fetchAttr = "googleAnalytics/report"
+    let view_id = 1
+    api.get.mockReturnValueOnce(
+      Promise.resolve({
+        data: {
+          response: {}
+        }
+      })
+    )
+
+    await actions.fetchReport({
+      commit,
+      rootState,
+      dispatch
+    }, {
+      view_id
+    })
+
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHING",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(commit).toHaveBeenCalledWith("setReport", {})
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHED",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(api.get).toHaveBeenCalledWith("/google-analytics/report/1")
+  })
+
+  it("fetchActiveViews", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    const fetchAttr = "googleAnalytics/active_views"
+    api.get.mockReturnValueOnce(
+      Promise.resolve({
+        data: {
+          response: views()
+        }
+      })
+    )
+
+    await actions.fetchActiveViews({
+      commit,
+      rootState,
+      dispatch
+    },
+    false
+    )
+
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHING",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(commit).toHaveBeenCalledWith("setActiveViews", views())
+    expect(commit).toHaveBeenCalledWith(
+      "SET_FETCHED",
+      fetchAttr,
+      expect.any(Object)
+    )
+    expect(api.get).toHaveBeenCalledWith("/google-analytics/view")
+  })
+
+  it("addActiveViews", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    api.post.mockReturnValueOnce(
+      Promise.resolve({
+        data: {
+          response: views()
+        }
+      })
+    )
+
+    await actions.addActiveViews({
+      commit,
+      state,
+      dispatch
+    },
+    views()
+    )
+
+    expect(commit).toHaveBeenCalledWith("addActiveViews", views())
+    expect(api.post).toHaveBeenCalledWith("/google-analytics/view", views())
+  })
+
+  it("updateActiveView", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let newView = {
+      id: 2,
+      web_property_id: 2,
+      name: "test-view"
+    }
+
+    await actions.updateActiveView({
+      commit,
+      state,
+      dispatch
+    },
+    newView
+    )
+
+    expect(commit).toHaveBeenCalled()
+  })
+
+  it("deleteActiveView", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    await actions.deleteActiveView({
+      commit,
+      state,
+      dispatch
+    },
+    2
+    )
+
+    expect(commit).toHaveBeenCalledWith("deleteActiveView", 2)
+  })
+
+  it("selectViewToAdd", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    const getters = {
+      getActiveViewById: () => undefined,
+      selected_views: []
+    }
+
+    await actions.selectViewToAdd({
+      commit,
+      state,
+      dispatch,
+      getters
+    }, {
+      view: views()[0],
+      toggle: true
+    })
+
+    expect(commit).toHaveBeenCalledWith("addSelectedView", views()[0])
+  })
+})
+
+describe("getters", () => {
+  let state = {
+    profiles: profiles(),
+    profiles_fetched: true,
+    profile: null,
+    accounts: accounts(),
+    accounts_fetched: true,
+    account: null,
+    web_properties: [],
+    web_properties_fetched: true,
+    web_property: null,
+    views: views(),
+    views_fetched: true,
+    active_views: views(),
+    active_views_fetched: true,
+    selected_views: [],
+    report: {},
+    report_fetched: true,
+    accountId: "",
+    profileId: "",
+    propertyId: "",
+    viewId: ""
+  }
+
+  it("getActiveViewById", () => {
+    let id = 1
+    expect(getters.getActiveViewById(state)(id)).toEqual(state.active_views[0])
+  })
+
+  it("profiles", () => {
+    expect(getters.profiles(state)).toEqual(state.profiles)
+  })
+
+  it("profiles_fetched", () => {
+    expect(getters.profiles_fetched(state)).toEqual(state.profiles_fetched)
+  })
+
+  it("accounts", () => {
+    expect(getters.accounts(state)).toEqual(state.accounts)
+  })
+
+  it("accounts_fetched", () => {
+    expect(getters.accounts_fetched(state)).toEqual(state.accounts_fetched)
+  })
+
+  it("web_properties", () => {
+    expect(getters.web_properties(state)).toEqual(state.web_properties)
+  })
+
+  it("web_properties_fetched", () => {
+    expect(getters.web_properties_fetched(state)).toEqual(
+      state.web_properties_fetched
+    )
+  })
+
+  it("views", () => {
+    expect(getters.views(state)).toEqual(state.views)
+  })
+
+  it("views_fetched", () => {
+    expect(getters.views_fetched(state)).toEqual(state.views_fetched)
+  })
+
+  it("report", () => {
+    expect(getters.report(state)).toEqual(state.report)
+  })
+
+  it("report_fetched", () => {
+    expect(getters.report_fetched(state)).toEqual(state.report_fetched)
+  })
+
+  it("active_views", () => {
+    expect(getters.active_views(state)).toEqual(state.active_views)
+  })
+
+  it("selected_views", () => {
+    expect(getters.selected_views(state)).toEqual(state.selected_views)
+  })
+
+  it("active_views_fetched", () => {
+    expect(getters.active_views_fetched(state)).toEqual(state.active_views_fetched)
+  })
+})

@@ -1,0 +1,136 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+import VueRouter from "vue-router"
+import { BaseButton, Card } from "@/components/lib"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import { shallowMount, createLocalVue } from "@vue/test-utils"
+import PanelList from "@/views/PanelList"
+import AddButton from "@/components/shared/AddButton"
+
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component("add-button", AddButton)
+localVue.component(BaseButton.name, BaseButton)
+localVue.component(Card.name, Card)
+localVue.use(BootstrapVue)
+localVue.use(Vuex)
+localVue.use(VueRouter)
+
+import { panels } from "../../data/panel"
+
+const router = new VueRouter()
+router.push = jest.fn()
+
+const actions = {
+  fetchPanels: jest.fn(),
+  deletePanel: jest.fn(),
+  fetchAvailableWidgets: jest.fn()
+}
+
+const mutations = {
+  SET_PANEL_EDIT: jest.fn()
+}
+
+let state = {
+  fetch_control: {},
+  errored_control: {},
+  panels: [
+    {
+      panel_id: 1,
+      name: "panel",
+      widgets: []
+    },
+    {
+      panel_id: 2,
+      name: "dev panel",
+      widgets: []
+    }
+  ],
+  getPanelById: () => panels()[0]
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+    widgets: []
+  },
+  getters: {
+    isLoading: state => state.isLoading,
+    isFetched: state => attr => state.fetch_control[attr] && state.fetch_control[attr] == "fetched",
+  },
+  modules: {
+    panel: {
+      namespaced: true,
+      state: state,
+      getters: {
+        getPanelById: () => () => panels()[0],
+        availableWidgets: () => [],
+        panels: () => [
+          {
+            panel_id: 1,
+            name: "panel",
+            widgets: []
+          },
+          {
+            panel_id: 2,
+            name: "dev panel",
+            widgets: []
+          }
+        ]
+      },
+      actions,
+      mutations
+    }
+  }
+})
+
+const show = jest.fn()
+const wrapper = shallowMount(PanelList, {
+  localVue,
+  store,
+  router,
+  mocks: {
+    show: show,
+    hide: jest.fn(),
+    $t: jest.fn()
+  }
+})
+
+describe("PanelList.vue", () => {
+  it("is PanelList", () => {
+    expect(wrapper.is(PanelList)).toBe(true)
+  })
+  it("should pre-fill data", () => {
+    expect(actions.fetchPanels).toHaveBeenCalled()
+  })
+
+  describe("methods", () => {
+    xit("setPanelToEdit", () => {
+      wrapper.vm.setPanelToEdit(panels()[0])
+      expect(mutations.SET_PANEL_EDIT).toHaveBeenCalled()
+    })
+
+    xit("setPanelToDelete", () => {
+      wrapper.vm.setPanelToDelete(panels()[0])
+      expect(wrapper.vm.panelDelete.panel_id).toEqual(1)
+    })
+
+    it("remove", () => {
+      wrapper.vm.remove(1)
+      expect(actions.deletePanel).toHaveBeenCalled()
+    })
+  })
+
+  describe("computed properties", () => {
+    xit("panels", () => {
+      expect(wrapper.vm.panels).toEqual(state.panels)
+    })
+  })
+
+  xit("panelDelete watcher", () => {
+    wrapper.setData({
+      panelDelete: panels()[0]
+    })
+    expect(show).toHaveBeenCalled()
+  })
+})

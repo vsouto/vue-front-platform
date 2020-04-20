@@ -1,0 +1,245 @@
+@font-face {
+  font-family: 'Poppins';
+  src: url('../fonts/poppins-latin-regular.eot');
+  src: url('../fonts/poppins-latin-regular.eot') format('embedded-opentype'),
+    url('../fonts/poppins-latin-regular.woff2') format('woff2'),
+    url('../fonts/poppins-latin-regular.woff') format('woff'),
+    url('../fonts/poppins-latin-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+// Switch
+.md-switch .md-switch-thumb .md-ripple,
+.md-switch .md-switch-thumb:before {
+  overflow: hidden;
+}
+
+.md-switch {
+  display: flex;
+  margin: 0 !important;
+
+  .md-switch-label {
+    color: rgba(0, 0, 0, 0.26);
+    font-size: 14px;
+    line-height: 1.42857;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+  }
+
+  .md-switch-container {
+    background-color: rgba(80, 80, 80, 0.7) !important;
+  }
+
+  .md-switch-thumb {
+    background-color: $white-color !important;
+    border: 1px solid rgba(0, 0, 0, 0.54);
+    box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.4);
+
+    .md-ripple .md-ripple-wave {
+      background-color: rgba(0, 0, 0, 0.54) !important;
+    }
+  }
+
+  &.md-checked {
+    .md-switch-thumb {
+      border: 1px solid $brand-primary;
+
+      .md-ripple .md-ripple-wave {
+        background-color: rgba(156, 39, 176, 0.7) !important;
+      }
+    }
+
+    .md-switch-container {
+      background-color: rgba(156, 39, 176, 0.7) !important;
+    }
+  }
+}
+
+.block-right {
+  float: right;
+}
+
+li {
+  list-style: none;
+}
+
+.list-center {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.vertical-center {
+  display: flex;
+  align-items: center;
+}
+
+.text-black {
+  color: black !important;
+}
+
+input[readonly=readonly].form-control {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+html .card h5.option__title {
+  color: black !important;
+}
+
+.multiselect__option {
+  color: black;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.material-design-icon.icon-15x {
+  height: 1.5em;
+  width: 1.5em;
+}
+
+.btn>.material-design-icon.icon-15x {
+  margin: 0 auto
+}
+
+.material-design-icon.icon-15x>.material-design-icon__svg {
+  height: 1.5em;
+  width: 1.5em;
+  position: static
+}
+
+.material-design-icon.icon-2x {
+  height: 2em;
+  width: 2em;
+  padding: 0;
+  margin: 0 auto;
+}
+
+.material-design-icon.icon-2x>.material-design-icon__svg {
+  height: 2em;
+  width: 2em;
+}
+
+.material-design-icon.icon-2x>.material-design-icon__svg {
+  left: 0;
+  top: 0;
+}
+
+.header-block {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  width: 100%;
+  padding: 25px 25px 5px;
+  margin-top: 5px;
+  height: 30px;
+  align-items: center;
+}
+
+.title-3 {
+  font-size: 24px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.bg-table-dark {
+  background: #27293d;
+}
+
+.bg-table-dark .modal-content {
+  background: #27293d;
+}
+
+.bg-table-dark .modal-content .modal-header .modal-title {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.item-white:hover {
+  color: #7f5cff;
+}
+
+.card-block {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.card-item {
+  padding: 0 10px;
+}
+
+// Widgets
+.card .widget-title {
+  display: inline-block;
+  vertical-align: middle
+}
+
+// Tables
+.table,
+.el-table table {
+  margin: 0 !important
+}
+
+.el-table table>thead>tr>th {
+  margin: 0 !important;
+  padding: 0 0 5px !important
+}
+
+.el-table th>.cell.highlight {
+  color: inherit !important
+}
+
+.spend-table {
+  min-height: 150px
+}
+
+.loading-block {
+  position: relative;
+  z-index: 1;
+}
+
+.card-pricing ul li {
+  text-align: left !important;
+}
+
+.w-20 {
+  width: 20%;
+}
+
+.justify-around {
+  display: flex;
+  justify-content: space-around
+}
+
+.text-left {
+  text-align: left;
+}
+
+.el-loading-mask {
+  background-color: hsla(240, 11%, 14%, 0.9) !important;
+  z-index: 2 !important;
+}
+
+
+/* vue-grid-layout */
+
+.vue-grid-item.cssTransforms {
+  transition-property: inherit !important;
+}
+
+.vue-resizable.resizing {
+  pointer-events: none;
+}
+
+.vue-draggable-dragging {
+  pointer-events: none;
+}

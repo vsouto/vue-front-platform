@@ -1,0 +1,147 @@
+import { shallowMount, createLocalVue } from "@vue/test-utils"
+import BootstrapVue from "bootstrap-vue"
+import { Tooltip, Row, Col } from "element-ui"
+import StatsSummaryCard from "@/components/widgets/StatsSummaryCard"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import { Card } from "@/components/lib"
+import FormattersMixin from "@/components/shared/mixins/FormattersMixin"
+import PanelStatsMixin from "@/components/shared/mixins/PanelStatsMixin"
+import Vuex from "vuex"
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component("el-row", Row)
+localVue.component("el-col", Col)
+localVue.component("el-tooltip", Tooltip)
+localVue.component(Card.name, Card)
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+localVue.mixin(FormattersMixin)
+localVue.mixin(PanelStatsMixin)
+
+const panel = {
+  panel_id: "test"
+}
+
+const widgetStats = {
+  summary_today: {
+    "id": "summary_today",
+    "stats_list": [
+      {
+        "date": "2019-07-05 00:00:00+00:00",
+        "monetizze_credit_card_sales": 1,
+        "monetizze_credit_card_earn": 1,
+        "google_adsense_earn": 1,
+        "monetizze_earn": 2,
+        "monetizze_sales": 1,
+        "monetizze_billet_earn": 1,
+        "facebook_ads_spend": 1,
+        "monetizze_billet_sales": 1
+      }
+    ],
+    "in_sync": false,
+    "stats_aggregated": {
+      "monetizze_credit_card_sales": 1,
+      "monetizze_credit_card_earn": 1,
+      "google_adsense_earn": 1,
+      "monetizze_earn": 2,
+      "monetizze_sales": 1,
+      "monetizze_billet_earn": 1,
+      "facebook_ads_spend": 1,
+      "monetizze_billet_sales": 1
+    },
+    "date_list": [
+      "2019-07-05",
+    ],
+    "percent_ready": 1,
+    "in_sync_dates": []
+  },
+  summary_yesterday: {
+    "id": "summary_yesterday",
+    "stats_list": [
+      {
+        "date": "2019-07-06 00:00:00+00:00",
+        "monetizze_credit_card_sales": 0.5,
+        "monetizze_credit_card_earn": 1,
+        "google_adsense_earn": 0.5,
+        "monetizze_earn": 1,
+        "monetizze_sales": 2,
+        "monetizze_billet_earn": 0.5,
+        "facebook_ads_spend": 0.5,
+        "monetizze_billet_sales": 1
+      }
+    ],
+    "in_sync": false,
+    "stats_aggregated": {
+      "monetizze_credit_card_sales": 0.5,
+      "monetizze_credit_card_earn": 1,
+      "google_adsense_earn": 0.5,
+      "monetizze_earn": 1,
+      "monetizze_sales": 2,
+      "monetizze_billet_earn": 0.5,
+      "facebook_ads_spend": 0.5,
+      "monetizze_billet_sales": 1
+    },
+    "date_list": [
+      "2019-07-06",
+    ],
+    "percent_ready": 1,
+    "in_sync_dates": []
+  }
+}
+
+const currencyRates = {
+  BRLxUSD: 0.5,
+  USDxBRL: 2
+}
+
+const store = new Vuex.Store({
+  state: {
+    fetch_control: {},
+    errored_control: {}
+  },
+  getters: {
+    isFetching: state => attr => state.fetch_control[attr] && state.fetch_control[attr] == "fetching"
+  },
+  modules: {
+    account: {
+      namespaced: true,
+      getters: {
+        currencyRates: () => currencyRates
+      }
+    },
+    panel: {
+      namespaced: true,
+      getters: {
+        panel: () => panel,
+        getWidgetStatsPanelId: () => () => widgetStats
+      }
+    }
+  }
+})
+
+const wrapper = shallowMount(StatsSummaryCard, {
+  localVue,
+  store,
+  propsData: {
+    title: "Test",
+    currentWidget: "summary_today",
+    compareWidget: "summary_yesterday"
+  },
+  mocks: {
+    $t: jest.fn()
+  }
+})
+
+describe("StatsSummaryCard.vue today vs yesterday", () => {
+  it("is StatsSummaryCard", () => {
+    expect(wrapper.is(StatsSummaryCard)).toBe(true)
+  })
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.isReady).toEqual(true)
+    expect(wrapper.vm.isInSync).toEqual(false)
+    expect(wrapper.vm.revenue).toEqual(3)
+    expect(wrapper.vm.roi).toEqual(3)
+    expect(wrapper.vm.revenue2).toEqual(1.5)
+    expect(wrapper.vm.roi2).toEqual(3)
+  })
+})

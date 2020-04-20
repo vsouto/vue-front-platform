@@ -1,0 +1,161 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+jest.mock("axios")
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import Panel from "@/views/Panel"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import {
+  BaseButton,
+  Card
+} from "@/components/lib"
+import { Tooltip, Row, Col } from "element-ui"
+import VueMoment from "vue-moment"
+import moment from "moment-timezone"
+
+// ! Could not make it work on tests
+// import { CancelToken } from "@/api"
+// ! Also there is something related to the fetchWidget panel action
+
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component("el-row", Row)
+localVue.component("el-col", Col)
+localVue.component("el-tooltip", Tooltip)
+localVue.component(BaseButton.name, BaseButton)
+localVue.component(Card.name, Card)
+localVue.use(Vuex)
+localVue.use(VueMoment, {
+  moment
+})
+localVue.use(BootstrapVue)
+
+const actions = {
+  fetchPanel: jest.fn(),
+  fetchWidgets: jest.fn(),
+  fetchWidget: jest.fn()
+}
+
+const mutations = {
+  SET_SELECTED_DATE: jest.fn(),
+  SET_PANEL: jest.fn(),
+  RESET_FETCHING: jest.fn()
+}
+
+const $router = {
+  push: jest.fn()
+}
+
+const $route = {
+  query: {
+    enableRTL: false,
+    error_title: "",
+    error_message: ""
+  },
+  params: {
+    id: "1"
+  }
+}
+
+const panelState = {
+  panel: {
+    name: "test-panel",
+    panel_id: "test-panel",
+    facebook_ads: ["facebook-id"],
+    monetizze: ["monetizze-id"]
+  },
+  selectedDate: {
+    end: {
+      _d: "Mon May 20 2019 10:27:09 GMT+0300",
+      _isUTC: true
+    },
+    start: {
+      _d: "Wed May 01 2019 03:00:00 GMT+0300",
+      _isUTC: true
+    }
+  }
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+  },
+  getters: {
+    isLoading: state => state.isLoading
+  },
+  modules: {
+    panel: {
+      namespaced: true,
+      state: panelState,
+      getters: {
+        panel: state => state.panel,
+        getPanelById: state => () => state.panel,
+        selectedDate: state => state.selectedDate
+      },
+      actions,
+      mutations
+    }
+  },
+})
+
+const wrapper = shallowMount(Panel, {
+  localVue,
+  store,
+  mocks: {
+    $router,
+    $route,
+    $notify: jest.fn(),
+    $i18n: {
+      locale: "pt-br"
+    },
+    $rtl: {
+      isRTL: false,
+      enableRTL: jest.fn()
+    },
+    $t: jest.fn(() => "text")
+  }
+})
+
+describe("Panel.vue", () => {
+  it("is Panel", () => {
+    expect(wrapper.is(Panel)).toBe(true)
+  })
+  it("should called mutations if panel exists", () => {
+    expect(mutations.SET_PANEL).toHaveBeenCalled()
+  })
+
+  describe("computed properties", () => {
+    it("isLoading", () => {
+      expect(wrapper.vm.isLoading).toBe(false)
+    })
+    it("panelFilters", () => {
+      expect(wrapper.vm.panelFilters).toEqual("")
+    })
+    it("enabledUrlParameters", () => {
+      expect(wrapper.vm.enabledUrlParameters).toBe(true)
+    })
+    it("enabledUrls", () => {
+      expect(wrapper.vm.enabledUrls).toBe(false)
+    })
+    it("enableRTL", () => {
+      expect(wrapper.vm.enableRTL).toBe(false)
+    })
+    it("isRTL", () => {
+      expect(wrapper.vm.isRTL).toBe(false)
+    })
+  })
+
+  describe("methods", () => {
+    xit("fetchAllWidgets", () => {
+      wrapper.vm.fetchAllWidgets("id")
+      expect(actions.fetchWidgets).toHaveBeenCalled()
+    })
+    xit("fetchCustomDateStats", () => {
+      wrapper.vm.fetchCustomDateStats()
+      expect(actions.fetchWidget).toHaveBeenCalled()
+    })
+  })
+})

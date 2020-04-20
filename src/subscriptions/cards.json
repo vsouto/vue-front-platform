@@ -1,0 +1,42 @@
+{
+  "subscriptions": [
+    {
+      "type": "monthly",
+      "title": "Premium",
+      "price": "89",
+      "project": "500",
+      "team": "50",
+      "contacts": "125",
+      "messages": "15.000",
+      "imageUrl": "https://www.w3schools.com/w3css/img_lights.jpg"
+    },
+    {
+      "type": "monthly",
+      "title": "Platinum",
+      "price": "199",
+      "project": "1000",
+      "team": "100",
+      "contacts": "550",
+      "messages": "50.000"
+    },
+    {
+      "type": "yearly",
+      "title": "Premium",
+      "price": "89",
+      "project": "500",
+      "team": "50",
+      "contacts": "125",
+      "messages": "15.000",
+      "imageUrl": "https://www.w3schools.com/w3css/img_lights.jpg"
+    },
+    {
+      "type": "yearly",
+      "title": "Platinum",
+      "price": "1999",
+      "project": "1000",
+      "team": "100",
+      "contacts": "550",
+      "messages": "50.000"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+jest.mock("axios")
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import VueRouter from "vue-router"
+import Dashboard from "@/views/Dashboard"
+import {
+  BaseButton, Card
+} from "@/components/lib"
+import PanelStatsMixin from "@/components/shared/mixins/PanelStatsMixin"
+import { predefinedDates as DATES } from "@/utils/dates"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import * as rootGetters from "@/store/getters"
+import PanelModel from "@/models/panel"
+
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component(Card.name, Card)
+localVue.component(BaseButton.name, BaseButton)
+localVue.mixin(PanelStatsMixin)
+localVue.use(VueRouter)
+localVue.use(Vuex)
+const router = new VueRouter()
+localVue.use(BootstrapVue)
+
+const date = {
+  start: DATES.month_first_day,
+  end: DATES.now
+}
+
+const panels = [
+  new PanelModel({
+    panel_id: "panel-id",
+    name: "panel"
+  }),
+  new PanelModel({
+    panel_id: "panel-id2",
+    name: "panel2"
+  })]
+
+const actions = {
+  fetchWidget: jest.fn(),
+  redirectToCreatePanel: jest.fn()
+}
+
+const mutations = {
+  SET_SELECTED_DATE: jest.fn(),
+  RESET_FETCHING: jest.fn()
+}
+
+let panelState = {
+  panels: []
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+    fetch_control: {"panel/fetchPanels": "fetched"},
+    errored_control: {}
+  },
+  getters: rootGetters,
+  modules: {
+    panel: {
+      namespaced: true,
+      getters: {
+        selectedDate: () => date,
+        panels: () => panelState.panels
+      },
+      actions,
+      mutations
+    },
+  },
+})
+
+const fetchWidget = jest.fn()
+
+const wrapper = shallowMount(Dashboard, {
+  localVue,
+  router,
+  store,
+  mocks: {
+    $t: () => "text",
+    $notify: jest.fn(),
+    fetchWidget: fetchWidget
+  }
+})
+
+describe("Dashboard.vue", () => {
+  it("is Dashboard", () => {
+    expect(wrapper.is(Dashboard)).toBe(true)
+  })
+  it("should fire fetchWidget", () => {
+    expect(fetchWidget).toBeCalledTimes(0)
+  })
+  it("computed properties should have valid data", () => {
+    expect(wrapper.vm.panels).toEqual([])
+  })
+
+  wrapper.vm.$nextTick(() => {
+    panelState.panels = panels
+    it("should fire fetchWidget", () => {
+      expect(fetchWidget).toBeCalledTimes(2)
+    })
+    it("computed properties should have valid data", () => {
+      expect(wrapper.vm.panels).toEqual(panels)
+    })
+  })
+
+})
+

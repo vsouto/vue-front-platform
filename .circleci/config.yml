@@ -1,0 +1,142 @@
+version: 2.1
+
+executors:
+  default-executor:
+    docker:
+      - image: circleci/node:10
+    working_directory: /tmp/vue
+
+commands:
+  install_dependencies:
+    steps:
+      - restore_cache:
+          keys:
+            - v2019-09-11-yarn-packages-
+      - run:
+          name: "Install dependencies"
+          command: |
+            mkdir -p test-results/jest
+            mkdir -p coverage
+            yarn config set cache .cache/yarn
+            yarn config set cache-folder .cache
+            yarn install --ignore-optional --ignore-platform --cache-folder .cache
+      - save_cache:
+          paths:
+            - .cache
+          key: v2019-09-11-yarn-packages-{{ checksum "yarn.lock" }}
+  lint_files:
+    steps:
+      - run:
+          name: "Lint files"
+          command: yarn lint
+  run_tests:
+    description: "Run tests"
+    steps:
+      - restore_cache:
+          keys:
+            - tests-{{ .Revision }}
+      - run:
+          name: "Remove file that control tests run"
+          command: rm ran-tests || echo "Tests not ran for this commit yet"
+      - restore_cache:
+          keys:
+            - tests-{{ .Revision }}
+      - run:
+          name: Run tests with JUnit as reporter (If not already ran)
+          command: test -f ran-tests && echo "Already ran tests for this commit" || yarn test:unit --ci --runInBand --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT: "test-results/jest/results.xml"
+      - run:
+          name: Create file to control tests run
+          command: |
+            touch ran-tests
+      - save_cache:
+          paths:
+            - test-results
+            - ran-tests
+          key: tests-{{ .Revision }}
+      - store_test_results:
+          path: test-results
+  pull_request:
+    description: "Creates pull request"
+    parameters:
+      pr_destination:
+        description: Pull request destination
+        type: enum
+        enum: ["development", "master"]
+        default: development
+    steps:
+      - run:
+          command: node_modules/bitbucket-cli/bitbucket-cli.js create-pull-request --source $CIRCLE_BRANCH --target << parameters.pr_destination >> --username leobarcellos --password TnnzXrVurSjzCnGJLmxH painel-integrado/frontend "Merging $CIRCLE_BRANCH into << parameters.pr_destination >>"
+  build_deploy:
+    parameters:
+      prod:
+        description: dev or prod
+        type: boolean
+        default: false
+    steps:
+      - run:
+          command: yarn build<<# parameters.prod >>-production<</ parameters.prod >>
+      - run:
+          command: yarn deploy<<# parameters.prod >>-production<</ parameters.prod >>
+
+jobs:
+  build:
+    executor: default-executor
+    parameters:
+      deploy:
+        type: boolean
+        default: false
+      pull_request:
+        type: boolean
+        default: false
+      prod:
+        type: boolean
+        default: false
+      pr_destination:
+        description: Pull request destination
+        type: enum
+        enum: ["development", "master"]
+        default: development
+    steps:
+      - checkout
+      - install_dependencies
+      - lint_files
+      - run_tests
+      - when:
+          condition: << parameters.pull_request >>
+          steps:
+            - pull_request
+      - when:
+          condition: << parameters.deploy >>
+          steps:
+            - build_deploy
+
+workflows:
+  version: 2
+  lint_test_deploy:
+    jobs:
+      - build:
+          name: build_all
+          pr_destination: development
+          filters:
+            branches:
+              ignore:
+                - development
+                - master
+      - build:
+          context: Dev
+          name: build_dev
+          deploy: true
+          prod: false
+          filters:
+            branches:
+              only: development
+      - build:
+          context: Prod
+          name: build_prod
+          deploy: true
+          prod: true
+          filters:
+            branches:
+              only: master

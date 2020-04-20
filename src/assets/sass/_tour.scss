@@ -1,0 +1,179 @@
+/* TOUR STYLES */
+.home-tour-container {
+  display: flex !important;
+  font-size: 18px !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+}
+
+/* This mother fucker locks the screen and gives several other problems
+    Dont use if you dont know what it does.
+body.in-tour {
+    pointer-events: none !important;
+}
+*/
+
+.v-step {
+  z-index: 9999 !important;
+}
+
+.tour-active {
+  position: relative !important;
+  z-index: 999 !important;
+}
+
+@media screen and (min-width: 2000px) {
+  .tour-active {
+    box-shadow: 0 0 0 10000px rgba(0, 0, 0, .6) !important;
+  }
+}
+
+@media screen and (max-width: 2000px) {
+  .tour-active {
+    box-shadow: 0 0 0 2500px rgba(0, 0, 0, .6) !important;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .tour-active {
+    box-shadow: 0 0 0 1500px rgba(0, 0, 0, .6) !important;
+  }
+}
+
+.tour-active,
+.v-tour {
+  pointer-events: auto !important;
+}
+
+/*** */
+
+.v-step {
+  -webkit-filter: drop-shadow(0 0 2px rgba(0, 0, 0, .5)) !important;
+  background: white !important;
+  border-radius: 4px !important;
+  color: #212c3c !important;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, .5)) !important;
+  max-width: 320px !important;
+  padding: 1rem !important;
+  text-align: center !important;
+  z-index: 5000 !important;
+}
+
+.v-step[x-placement^=modal] {
+  margin-left: .5rem !important;
+  margin-left: 40% !important;
+  margin-right: 40% !important;
+  max-width: 20% !important;
+}
+
+.v-step .v-step__arrow {
+  border-color: white !important;
+  border-style: solid !important;
+  height: 0 !important;
+  margin: .5rem !important;
+  position: absolute !important;
+  width: 0
+}
+
+.v-step .v-step__arrow--dark {
+  border-color: #212c3c
+}
+
+.v-step[x-placement^=top] {
+  margin-bottom: .5rem
+}
+
+.v-step[x-placement^=top] .v-step__arrow {
+  border-bottom-color: transparent !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-width: .5rem .5rem 0 !important;
+  bottom: -.5rem !important;
+  left: calc(50% - 1rem) !important;
+  margin-bottom: 0 !important;
+  margin-top: 0
+}
+
+.v-step[x-placement^=bottom] {
+  margin-top: .5rem
+}
+
+.v-step[x-placement^=bottom] .v-step__arrow {
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  border-width: 0 .5rem .5rem !important;
+  left: calc(50% - 1rem) !important;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  top: -.5rem
+}
+
+.v-step[x-placement^=right] {
+  margin-left: .5rem
+}
+
+.v-step[x-placement^=right] .v-step__arrow {
+  border-bottom-color: transparent !important;
+  border-left-color: transparent !important;
+  border-top-color: transparent !important;
+  border-width: .5rem .5rem .5rem 0 !important;
+  left: -.5rem !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  top: calc(50% - 1rem)
+}
+
+.v-step[x-placement^=left] {
+  margin-right: .5rem
+}
+
+.v-step[x-placement^=left] .v-step__arrow {
+  border-bottom-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  border-width: .5rem 0 .5rem .5rem !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  right: -.5rem !important;
+  top: calc(50% - 1rem)
+}
+
+.v-step__header {
+  background-color: #212c3c !important;
+  border-top-left-radius: 3px !important;
+  border-top-right-radius: 3px !important;
+  margin: -1rem -1rem .5rem !important;
+  padding: .5rem
+}
+
+.v-step__content {
+  margin: 0 0 1rem
+}
+
+.v-step__button {
+  -webkit-transition: all .2s ease !important;
+  background: transparent !important;
+  border: .05rem solid #212c3c !important;
+  border-radius: .1rem !important;
+  color: #212c3c !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  font-size: .8rem !important;
+  height: 1.8rem !important;
+  line-height: 1rem !important;
+  margin: 0 .2rem !important;
+  outline: none !important;
+  padding: .35rem .4rem !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  transition: all .2s ease !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  border-radius: 4px !important;
+}
+
+.v-step__button:hover {
+  background-color: #e14eca !important;
+  color: white !important;
+}

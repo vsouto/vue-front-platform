@@ -1,0 +1,27 @@
+@import "widgets/funnel-graph";
+
+.widget {
+  margin: 0;
+  padding: 2rem 0 0;
+  min-height: 100%;
+
+  .widget-title {
+    padding-left: 0.225em
+  }
+
+  .card-body {
+    .sc-table {
+      .pagination-bar {
+        .pagination-wrap {
+          .el-pagination {
+
+            .el-pagination__jump,
+            .el-pagination__sizes {
+              display: none
+            }
+          }
+        }
+      }
+    }
+  }
+}

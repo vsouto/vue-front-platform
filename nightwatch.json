@@ -1,0 +1,55 @@
+{
+  "src_folders" : ["./tests/e2e/specs/"],
+  "custom_commands_path" : "./tests/e2e/custom-commands",
+  "custom_assertions_path" : "./tests/e2e/custom-assertions",
+  "page_objects_path" : "",
+  "globals_path" : "./tests/e2e/globals.js",
+  "webdriver" : {
+    "start_process": true
+  },
+  "test_settings" : {
+    "default" : {
+      "webdriver": {
+        "server_path": "./node_modules/chromedriver",
+        "port": 4444,
+        "cli_args": [
+          "--log", "debug"
+        ]
+      },
+      "desiredCapabilities" : {
+        "browserName" : "chrome",
+        "webStorageEnabled" : true,
+        "databaseEnabled" : true,
+        "applicationCacheEnabled" : true,
+        "nativeEvents" : true,
+        "javascriptEnabled": true,
+        "acceptInsecureCerts" : true,
+        "acceptSslCerts": true,
+        "chromeOptions" : {
+          "args" : ["--no-sandbox"]
+        }
+      },
+      "chrome" : {
+        "desiredCapabilities": {
+         "browserName": "chrome",
+          "javascriptEnabled": true,
+          "acceptSslCerts": true,
+          "webStorageEnabled" : true,
+          "databaseEnabled" : true,
+          "acceptInsecureCerts" : true
+        }
+      }
+    },
+    "selenium_server" : {
+      "selenium" : {
+        "start_process": true,
+        "host": "localhost",
+        "server_path": "./bin/selenium-server-standalone-3.9.1.jar",
+        "cli_args": {
+          "webdriver.gecko.driver": "./bin/geckodriver",
+          "webdriver.chrome.driver": "./bin/chromedriver"
+        }
+      }
+    }
+  }
+}

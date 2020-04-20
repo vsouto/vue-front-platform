@@ -1,0 +1,50 @@
+FROM lambci/lambda:build-python3.6
+LABEL maintainer="dev@painelintegrado.com.br"
+
+# Build metadata
+ARG buildno
+ARG gitcommithash
+RUN echo "Build number: $buildno" && \
+    echo "Based on commit: $gitcommithash"
+
+# Fancy prompt to remind you are in zappashell
+RUN echo 'export PS1="\[\e[36m\]pi-shell (development)>\[\e[m\] "' >> /root/.bashrc
+
+# Bitbucket keys
+RUN mkdir /root/.ssh/
+ADD id_rsa /root/.ssh/id_rsa
+RUN touch /root/.ssh/known_hosts && \
+    ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
+
+# Creates directory, copy requirements and install dependencies
+RUN mkdir /app
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
+
+# # Add user app
+# RUN adduser -d /app app && \
+#     chown -R app /app
+
+# Copy App data and set owner
+# COPY . /app
+
+# Set Workdir
+WORKDIR /app
+
+# Expose App Port
+EXPOSE 5000
+
+# Expose DynamoDB Port (local)
+EXPOSE 8000
+
+# Expose Redis Port
+EXPOSE 6399
+
+# Copy .aws files
+# RUN mkdir /root/.aws/
+# COPY .aws-dev/config /root/.aws/config
+# COPY .aws-dev/credentials /root/.aws/credentials
+
+ENTRYPOINT ["python"]
+CMD ["run.py"]
+# CMD ["bash"]

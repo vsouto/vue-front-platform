@@ -1,0 +1,23 @@
+.input-small {
+  width: 20px;
+  text-align: center;
+  border: none;
+  height: 16px;
+  outline: 0;
+  padding: 18px 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.expiration__wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 3px;
+}
+.input-small__wrap {
+  border: 1px solid #2b3553;
+  border-radius: 0.4285rem;
+}

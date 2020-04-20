@@ -1,0 +1,87 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import HotmartSubscriptions from "@/platforms/HotmartSubscriptions"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import {
+  BaseButton, BaseInput, Card
+} from "@/components/lib"
+import {
+  subscriptions
+} from "../../data/hotmart"
+
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component(BaseInput.name, BaseInput)
+localVue.component(BaseButton.name, BaseButton)
+localVue.component(Card.name, Card)
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+
+const $router = {
+  push: jest.fn()
+}
+
+const $route = {
+  params: {
+    id: 5
+  }
+}
+
+const actions = {
+  fetchSubscriptions: jest.fn(),
+}
+
+let state = {
+  subscriptions: subscriptions(),
+  subscriptions_fetched_id: 1
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+  },
+  getters: {
+    isLoading: state => state.isLoading
+  },
+  modules: {
+    hotmart: {
+      namespaced: true,
+      state: state,
+      getters: {
+        subscriptions: state => state.subscriptions,
+        subscriptions_fetched_id: state => state.subscriptions_fetched_id,
+      },
+      actions,
+    }
+  }
+})
+
+const wrapper = shallowMount(HotmartSubscriptions, {
+  localVue,
+  store,
+  mocks: {
+    $router,
+    $route,
+    $notify: jest.fn(),
+    $t: jest.fn()
+  }
+})
+
+describe("HotmartSubscriptions.vue", () => {
+  it("is HotmartSubscriptions", () => {
+    expect(wrapper.is(HotmartSubscriptions)).toBe(true)
+  })
+  it("should prefetch data", () => {
+    expect(actions.fetchSubscriptions).toHaveBeenCalled()
+  })
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.isLoading).toBe(false)
+    expect(wrapper.vm.subscriptions.length).toEqual(2)
+    expect(wrapper.vm.fetched).toBe(true)
+  })
+})

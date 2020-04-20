@@ -1,0 +1,122 @@
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+
+import BootstrapVue from "bootstrap-vue"
+import GoogleAdsenseEarnTable from "@/google_adsense/widgets/earnTable"
+import LoadingAnimation from "@/components/shared/LoadingAnimation"
+import {
+  BaseButton,
+  Card
+} from "@/components/lib"
+import Vuex from "vuex"
+import { Tooltip } from "element-ui"
+import VueMoment from "vue-moment"
+import moment from "moment-timezone"
+
+const localVue = createLocalVue()
+localVue.component("loading", LoadingAnimation)
+localVue.component("el-tooltip", Tooltip)
+localVue.component(BaseButton.name, BaseButton)
+localVue.component(Card.name, Card)
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+localVue.use(VueMoment, {
+  moment
+})
+
+const actions = {
+  fetchWidget: jest.fn()
+}
+
+const mockedRoute = {
+  params: {
+    id: 1
+  }
+}
+
+const currencyRates = {
+  BRLxUSD: 0.26,
+  USDxBRL: 3.87
+}
+
+const store = new Vuex.Store({
+  state: {
+    isLoading: false,
+    fetch_control: {"fetchWidget/1/table_earn_google_adsense": "fetched"},
+    errored_control: {}
+  },
+  getters: {
+    isLoading: state => state.isLoading,
+    isFetching: state => attr => state.fetch_control[attr] && state.fetch_control[attr] == "fetching",
+    isFetched: state => attr => state.fetch_control[attr] && state.fetch_control[attr] == "fetched",
+    canFetch: state => attr => !state.fetch_control[attr],
+    isReady: state => attr => state.fetch_control[attr] && (
+      state.fetch_control[attr] != "fetching" ||
+      state.fetch_control[attr] == "fetched"
+    ),
+    isErrored: state => attr => state.errored_control[attr] && state.errored_control[attr] == "error"
+  },
+  modules: {
+    account: {
+      namespaced: true,
+      getters: {
+        currencyRates: () =>  currencyRates
+      }
+    },
+    panel: {
+      namespaced: true,
+      getters: {
+        widget: () => () => [],
+      },
+      actions
+    }
+  }
+})
+const wrapper = shallowMount(GoogleAdsenseEarnTable, {
+  localVue,
+  store,
+  mocks: {
+    $route: mockedRoute,
+    $t: jest.fn()
+  }
+})
+
+describe("GoogleAdsenseEarnTable.vue", () => {
+  it("is GoogleAdsenseEarnTable", () => {
+    expect(wrapper.is(GoogleAdsenseEarnTable)).toBe(true)
+  })
+  it("should prefetch data", () => {
+    expect(actions.fetchWidget).toHaveBeenCalled()
+  })
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.tableData).toEqual([])
+    expect(wrapper.vm.queriedData).toEqual([])
+    expect(wrapper.vm.isReady).toBe(false)
+    expect(wrapper.vm.currencyRates).toEqual(currencyRates)
+    wrapper.setData({
+      pagination: {
+        perPage: 5,
+        currentPage: 1
+      }
+    })
+    expect(wrapper.vm.to).toEqual(0)
+    expect(wrapper.vm.from).toEqual(0)
+  })
+  xit("formatterCurrency", () => {
+    let currency = wrapper.vm.formatterCurrency({}, {}, 5, 1)
+    expect(currency).toEqual("R$ 19,35")
+  })
+  it("getSummaries", () => {
+    let summaries = wrapper.vm.getSummaries({
+      columns: [
+        { property: "prop1" },
+        { property: "prop2" },
+        { property: "prop3" },
+      ],
+      data: [{ prop1: "1" }]
+    })
+    expect(summaries).toEqual([1, "Total", "",])
+  })
+})

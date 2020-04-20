@@ -1,0 +1,62 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+import StoresTable from "@/shopify/components/StoresTable"
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import VueRouter from "vue-router"
+import {
+  accounts
+} from "../../data/google-analytics"
+import {
+  Card
+} from "@/components/lib"
+const localVue = createLocalVue()
+localVue.use(VueRouter)
+localVue.use(Vuex)
+localVue.use(BootstrapVue)
+localVue.component(Card.name, Card)
+
+const router = new VueRouter()
+
+const store = new Vuex.Store({
+  modules: {
+    shopify: {
+      namespaced: true,
+      state: {
+        accounts: accounts(),
+        accounts_fetched: true
+      },
+      getters: {
+        accounts_fetched: state => () => state.accounts_fetched
+      }
+    }
+  }
+})
+
+const wrapper = shallowMount(StoresTable, {
+  localVue,
+  router,
+  store,
+  propsData: {
+    accounts: accounts(),
+  },
+  mocks: {
+    $t: jest.fn()
+  }
+})
+
+describe("StoresTable.vue", () => {
+  it("is StoresTable", () => {
+    expect(wrapper.is(StoresTable)).toBe(true)
+  })
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.computedTableData).toEqual(accounts())
+  })
+  it("setAccountToDelete method", () => {
+    wrapper.vm.setAccountToDelete({})
+    expect(wrapper.emitted()["set-account-to-delete"]).toEqual([[{}]])
+  })
+})

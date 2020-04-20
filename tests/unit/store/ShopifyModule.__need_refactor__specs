@@ -1,0 +1,294 @@
+import * as mutations from "@/store/modules/shopify/mutations"
+import * as getters from "@/store/modules/shopify/getters"
+import * as actions from "@/store/modules/shopify/actions"
+
+jest.mock("axios")
+jest.mock("auth0-js")
+
+import api from "@/api"
+
+import {
+  accounts
+} from "../../data/google-analytics"
+
+
+describe("mutations", () => {
+  let state = {
+    accounts: accounts(),
+    accounts_fetched: false,
+    account_id: "",
+    orders: [],
+    products: [],
+    orders_fetched: false,
+    products_fetched: false
+  }
+
+  it("addAccount", () => {
+    let account = {
+      id: 3,
+      name: "devs"
+    }
+    mutations.addAccount(state, account)
+    expect(state.accounts[state.accounts.length - 1]).toEqual(account)
+  })
+
+  it("SET_ACCOUNTS", () => {
+    let updatedAccounts = accounts()
+    updatedAccounts[0].name = "devs"
+    mutations.SET_ACCOUNTS(state, updatedAccounts)
+    expect(state.accounts).toEqual(updatedAccounts)
+  })
+
+  it("updateAccount", () => {
+    let account = {
+      id: 1,
+      name: "devs"
+    }
+    mutations.updateAccount(state, account)
+    expect(state.accounts[0]).toEqual(account)
+  })
+
+  it("deleteAccount", () => {
+    let account = {
+      id: 1,
+      name: "devs"
+    }
+    let id = 2
+    mutations.deleteAccount(state, id)
+    expect(state.accounts[0]).toEqual(account)
+  })
+
+  it("setOrders", () => {
+    let orders = [{
+      id: 1,
+      name: "order"
+    }]
+    mutations.setOrders(state, orders)
+    expect(state.orders).toEqual(orders)
+  })
+
+  it("setProducts", () => {
+    let products = [{
+      id: 1,
+      name: "product"
+    }]
+    mutations.setProducts(state, products)
+    expect(state.products).toEqual(products)
+  })
+})
+
+describe("actions", () => {
+  let state = {
+    accounts: accounts(),
+    accounts_fetched: false,
+    account_id: "",
+    orders: [],
+    products: [],
+    orders_fetched: false,
+    products_fetched: false
+  }
+
+  it("fetchAccounts when accounts_fetched is false", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    state.accounts_fetched = false
+    api.get.mockReturnValueOnce(Promise.resolve({
+      data: {
+        response: accounts()
+      }
+    }))
+
+    await actions.fetchAccounts({
+      commit,
+      state,
+      dispatch
+    })
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", true, expect.any(Object))
+    expect(commit).toHaveBeenCalledWith("SET_ACCOUNTS", accounts())
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", false, expect.any(Object))
+    expect(api.get).toHaveBeenCalledWith("/shopify/account")
+  })
+
+  it("fetchAccounts when accounts_fetched is true", async () => {
+    const commit = jest.fn()
+    state.accounts_fetched = true
+
+    await actions.fetchAccounts({
+      state,
+      commit
+    })
+    expect(commit).not.toHaveBeenCalled()
+  })
+
+  it("addAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+
+    await actions.addAccount({
+      commit,
+      dispatch
+    },
+    accounts()[0]
+    )
+    expect(commit).toHaveBeenCalledWith("addAccount", accounts()[0])
+    expect(api.post).toHaveBeenCalledWith(
+      "/shopify/account",
+      accounts()[0]
+    )
+  })
+
+  it("updateAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let account = {
+      id: 1,
+      name: "dev"
+    }
+    await actions.updateAccount({
+      commit,
+      dispatch
+    },
+    account
+    )
+    expect(commit).toHaveBeenCalledWith("updateAccount", account)
+    expect(api.patch).toHaveBeenCalledWith("/shopify/account/1", account)
+  })
+
+  it("deleteAccount", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    let id = 1
+
+    await actions.deleteAccount({
+      commit,
+      dispatch
+    },
+    id
+    )
+    expect(commit).toHaveBeenCalledWith("deleteAccount", id)
+    expect(api.delete).toHaveBeenCalledWith("/shopify/account/1")
+  })
+
+  it("fetchOrders when orders_fetched is false", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    state.orders_fetched = false
+    api.get.mockReturnValueOnce(Promise.resolve({
+      data: {
+        response: []
+      }
+    }))
+    let id = 1
+
+    await actions.fetchOrders({
+      commit,
+      state,
+      dispatch
+    }, id)
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", true, expect.any(Object))
+    expect(commit).toHaveBeenCalledWith("setOrders", [])
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", false, expect.any(Object))
+    expect(api.get).toHaveBeenCalledWith("/shopify/account/1/orders")
+  })
+
+  it("fetchOrders when orders_fetched is true", async () => {
+    const commit = jest.fn()
+    state.orders_fetched = true
+
+    await actions.fetchOrders({
+      state,
+      commit
+    })
+    expect(commit).not.toHaveBeenCalled()
+  })
+
+  it("fetchProducts when products_fetched is false", async () => {
+    const commit = jest.fn()
+    const dispatch = jest.fn()
+    state.products_fetched = false
+    api.get.mockReturnValueOnce(Promise.resolve({
+      data: {
+        response: []
+      }
+    }))
+    let id = 1
+
+    await actions.fetchProducts({
+      commit,
+      state,
+      dispatch
+    }, id)
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", true, expect.any(Object))
+    expect(commit).toHaveBeenCalledWith("setProducts", [])
+    expect(commit).toHaveBeenCalledWith("SET_LOADING", false, expect.any(Object))
+    expect(api.get).toHaveBeenCalledWith("/shopify/account/1/products")
+  })
+
+  it("fetchProducts when products_fetched is true", async () => {
+    const commit = jest.fn()
+    state.products_fetched = true
+
+    await actions.fetchProducts({
+      state,
+      commit
+    })
+    expect(commit).not.toHaveBeenCalled()
+  })
+})
+
+describe("getters", () => {
+  let state = {
+    accounts: accounts(),
+    accounts_fetched: true,
+    account_id: 1,
+    orders: [],
+    products: [],
+    orders_fetched: false,
+    products_fetched: false
+  }
+
+  it("getAccountById when accounts_fetched is true", () => {
+    let id = 1
+    expect(getters.getAccountById(state)(id)).toEqual(state.accounts[0])
+  })
+
+  it("getAccountById when accounts_fetched is false", () => {
+    let id = 1
+    state.accounts_fetched = false
+    expect(getters.getAccountById(state)(id)).toEqual(null)
+  })
+
+  it("getProductsByShopId", () => {
+    let id = 1
+    expect(getters.getProductsByShopId(state)(id)).toEqual([])
+  })
+
+  it("accountId", () => {
+    expect(getters.accountId(state)).toEqual(state.account_id)
+  })
+
+  it("accounts_fetched", () => {
+    expect(getters.accounts_fetched(state)).toEqual(state.accounts_fetched)
+  })
+
+  it("accounts", () => {
+    expect(getters.accounts(state)).toEqual(state.accounts)
+  })
+
+  it("orders", () => {
+    expect(getters.orders(state)).toEqual(state.orders)
+  })
+
+  it("orders_fetched", () => {
+    expect(getters.orders_fetched(state)).toEqual(state.orders_fetched)
+  })
+
+  it("products", () => {
+    expect(getters.products(state)).toEqual(state.products)
+  })
+
+  it("products_fetched", () => {
+    expect(getters.products_fetched(state)).toEqual(state.products_fetched)
+  })
+})
+

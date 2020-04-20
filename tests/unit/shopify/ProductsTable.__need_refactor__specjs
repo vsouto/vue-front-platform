@@ -1,0 +1,46 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+import ProductsTable from "@/shopify/components/ProductsTable"
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import VueRouter from "vue-router"
+
+const localVue = createLocalVue()
+localVue.use(VueRouter)
+localVue.use(Vuex)
+const router = new VueRouter()
+localVue.use(BootstrapVue)
+
+const wrapper = shallowMount(ProductsTable, {
+  localVue,
+  router,
+  propsData: {
+    products: [],
+  },
+  mocks: {
+    $t: jest.fn()
+  }
+})
+
+describe("ProductsTable.vue", () => {
+  wrapper.setData({
+    pagination: {
+      perPage: 5,
+      currentPage: 1,
+      perPageOptions: [5, 10, 25, 50],
+      total: 0
+    }
+  })
+  it("is ProductsTable", () => {
+    expect(wrapper.is(ProductsTable)).toBe(true)
+  })
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.queriedData).toEqual([])
+    expect(wrapper.vm.to).toEqual(0)
+    expect(wrapper.vm.from).toEqual(0)
+    expect(wrapper.vm.total).toEqual(0)
+  })
+})

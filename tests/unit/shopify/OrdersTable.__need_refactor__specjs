@@ -1,0 +1,55 @@
+import Vuex from "vuex"
+import BootstrapVue from "bootstrap-vue"
+import OrdersTable from "@/shopify/components/OrdersTable"
+
+import {
+  shallowMount,
+  createLocalVue
+} from "@vue/test-utils"
+import VueRouter from "vue-router"
+
+const localVue = createLocalVue()
+localVue.use(VueRouter)
+localVue.use(Vuex)
+const router = new VueRouter()
+localVue.use(BootstrapVue)
+
+const wrapper = shallowMount(OrdersTable, {
+  localVue,
+  router,
+  propsData: {
+    orders: [],
+  },
+  mocks: {
+    $t: jest.fn()
+  }
+})
+
+describe("OrdersTable.vue", () => {
+  wrapper.setData({
+    pagination: {
+      perPage: 5,
+      currentPage: 1,
+      perPageOptions: [5, 10, 25, 50],
+      total: 0
+    }
+  })
+  it("is OrdersTable", () => {
+    expect(wrapper.is(OrdersTable)).toBe(true)
+  })
+  it("computed should have valid values", () => {
+    expect(wrapper.vm.queriedData).toEqual([])
+    expect(wrapper.vm.to).toEqual(0)
+    expect(wrapper.vm.from).toEqual(0)
+    expect(wrapper.vm.total).toEqual(0)
+  })
+  it("formatProducts", () => {
+    let data = wrapper.vm.formatProducts({}, {}, [], 1)
+    expect(data).toEqual(0)
+  })
+
+  it("loadOrderProducts", () => {
+    wrapper.vm.loadOrderProducts({id: 1 })
+    expect(wrapper.emitted().loadOrderProducts[0]).toEqual([1])
+  })
+})
